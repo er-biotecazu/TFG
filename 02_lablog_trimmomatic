@@ -1,0 +1,35 @@
+#!/bin/bash
+#SBATCH --ntasks-per-core=8
+#SBATCH --mem-per-cpu=10GB                     # Reserve X GB RAM for the job
+#SBATCH --nodes=1                              # Node count
+#SBATCH --job-name trimming                    # Name for your job
+#SBATCH --ntasks 1                             # Number of task
+#SBATCH --time=02:00:00                        # Total run time limit in HH:MM:SS
+#SBATCH --partition=fast                       # Partition to submit
+#SBATCH --error=02-Trimming_%A_%a.err          # STDERR file
+#SBATCH --output=logs/02-Trimming_%a.%A.out    # STDOUT file
+#SBATCH --mail-type=end                        # Send email when job ends
+#SBATCH --mail-user=eric.torres@alumnos.upm.es # This is the email you wish to be notified at
+#SBATCH --array=0-2                            # Array range and number of simultanous jobs
+
+
+# Load required modules
+
+ml Trimmomatic/0.38-Java-1.8
+
+#Create variables of input and output data
+
+RUN_PATH_I=/home/erict/my_files_eric/Ct_nuevo/RNA-seq/axenic/X204SC24030186-Z01-F001/01.RawData/all_axenic_samples/separated_lanes/00-raw_reads
+RUN_PATH_O=/home/erict/my_files_eric/Ct_nuevo/RNA-seq/axenic/X204SC24030186-Z01-F001/01.RawData/all_axenic_samples/separated_lanes/02-trimmomatic
+names=($(cat /home/erict/my_files_eric/Ct_nuevo/RNA-seq/axenic/X204SC24030186-Z01-F001/01.RawData/all_axenic_samples/separated_lanes/00-raw_reads/names_axenic_samples.txt))
+END_R1=1.fastq
+END_R2=2.fastq
+
+
+
+# Run trimming analysis on each fastq file
+
+#An explanation of these parameters can be checked at: http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf
+#I am using my own adapter sequences (given by the report from the sequencing company), because there are not precomputed fasta files for sequence adapters.
+
+java -jar $EBROOTTRIMMOMATIC/trimmomatic-0.38.jar PE -phred33 $RUN_PATH_I/${names[${SLURM_ARRAY_TASK_ID}]}_$END_R1 $RUN_PATH_I/${names[${SLURM_ARRAY_TASK_ID}]}_$END_R2 $RUN_PATH_O/${names[${SLURM_ARRAY_TASK_ID}]}_R1.clean_qc_pair.fastq $RUN_PATH_O/${names[${SLURM_ARRAY_TASK_ID}]}_R1.clean_qc_unpair.fastq $RUN_PATH_O/${names[${SLURM_ARRAY_TASK_ID}]}_R2.clean_qc_pair.fastq  $RUN_PATH_O/${names[${SLURM_ARRAY_TASK_ID}]}_R2.clean_qc_unpair.fastq ILLUMINACLIP:adapters.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:50
