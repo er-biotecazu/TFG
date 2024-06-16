@@ -10,7 +10,7 @@
 #SBATCH --output=logs/02-Trimming_%a.%A.out    # STDOUT file
 #SBATCH --mail-type=end                        # Send email when job ends
 #SBATCH --mail-user=eric.torres@alumnos.upm.es # This is the email you wish to be notified at
-#SBATCH --array=0-2                            # Array range and number of simultanous jobs
+#SBATCH --array=0-12                            # Array range and number of simultanous jobs
 
 
 # Load required modules
