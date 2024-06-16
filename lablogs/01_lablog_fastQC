@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#SBATCH --job-name pre-trimming                # Name for your job
+#SBATCH --ntasks 1                             # Number of task
+#SBATCH --time=24:00:00                        # Total run time limit in HH:MM:SS
+#SBATCH --partition=medium                     # Partition to submit
+#SBATCH --error=01-FastQC_%A_%a.err            # STDERR file
+#SBATCH --output=logs/01-FastQC_%a.%A.out      # STDOUT file
+#SBATCH --mail-type=end                        # send email when job ends
+#SBATCH --mail-user=eric.torres@alumnos.upm.es # This is the email you wish to be notified at
+#SBATCH --array=0-50                           # Array range and number of simultanous job 
+
+# Load required modules
+ml FastQC
+
+# Activate environment 
+source $HOME/miniconda3/bin/activate
+
+# Search all the fastq files from the "data" directory and generate the array
+file=$(ls /home/erict/my_files_eric/RNA-seq/00-raw_reads/*.fq.gz|sed -n ${SLURM_ARRAY_TASK_ID}p)
+
+# Run quality analysis on each fastq file
+fastqc -o /home/erict/my_files_eric/Ct_nuevo/RNA-seq/01-fastqc $file
+
+#Run multiqc to create summary report
+multiqc --force .
