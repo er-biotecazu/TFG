@@ -1,14 +1,14 @@
 #!/bin/bash
 
-#SBATCH --job-name pre-trimming              # Name for your job
-#SBATCH --ntasks 1                           # Number of task
-#SBATCH --time=24:00:00                      # Total run time limit in HH:MM:SS
-#SBATCH --partition=medium                   # Partition to submit
-#SBATCH --error=01-FastQC_%A_%a.err          # STDERR file
-#SBATCH --output=logs/01-FastQC_%a.%A.out    # STDOUT file
-#SBATCH --mail-type=end                      # send email when job ends
-#SBATCH --mail-user=eric.torres@alumnos.upm.es # this is the email you wish to be notified at
-#SBATCH --array=0-50                         # Array range and number of simultanous job 
+#SBATCH --job-name pre-trimming                # Name for your job
+#SBATCH --ntasks 1                             # Number of task
+#SBATCH --time=24:00:00                        # Total run time limit in HH:MM:SS
+#SBATCH --partition=medium                     # Partition to submit
+#SBATCH --error=01-FastQC_%A_%a.err            # STDERR file
+#SBATCH --output=logs/01-FastQC_%a.%A.out      # STDOUT file
+#SBATCH --mail-type=end                        # send email when job ends
+#SBATCH --mail-user=eric.torres@alumnos.upm.es # This is the email you wish to be notified at
+#SBATCH --array=0-50                           # Array range and number of simultanous job 
 
 # Load required modules
 ml FastQC
