@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#SBATCH --job-name signalp6                    # Name for your job
+#SBATCH --ntasks 1                             # Number of task
+#SBATCH --time=24:00:00                        # Total run time limit in HH:MM:SS
+#SBATCH --partition=medium                     # Partition to submit
+#SBATCH --error=signalp6_%A_%a.err             # STDERR file
+#SBATCH --mail-type=end                        # Send email when job ends
+#SBATCH --mail-user=eric.torres@alumnos.upm.es # This is the email you wish to be notified at
+
+
+source $HOME/miniconda3/envs/signalp/bin/signalp6
+
+signalp6 --fastafile /home/erict/my_files_eric/Ct_nuevo/archivos_secuencias/ctprotein.fasta --organism eukarya --output_dir /home/erict/my_files_eric/Ct_nuevo/Secretoma/signalp/results_signal6p/results_prot1 --format txt --mode slow-sequential
