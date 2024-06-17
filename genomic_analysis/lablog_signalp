@@ -11,4 +11,4 @@
 
 source $HOME/miniconda3/envs/signalp/bin/signalp6
 
-signalp6 --fastafile /home/erict/my_files_eric/Ct_nuevo/archivos_secuencias/ctprotein.fasta --organism eukarya --output_dir /home/erict/my_files_eric/Ct_nuevo/Secretoma/signalp/results_signal6p/results_prot1 --format txt --mode slow-sequential
+signalp6 --fastafile /home/erict/my_files_eric/Ct_nuevo/archivos_secuencias/protein.faa --organism eukarya --output_dir /home/erict/my_files_eric/Ct_nuevo/Secretoma/signalp/results_signal6p/results_prot1 --format txt --mode slow-sequential
