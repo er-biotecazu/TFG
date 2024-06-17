@@ -9,4 +9,4 @@
 #SBATCH --mail-user=eric.torres@alumnos.upm.es # This is the email you wish to be notified at
 
 
-targetp-2.0/bin/targetp -fasta /home/erict/my_files_eric/Ct_nuevo/archivos_secuencias/ctprotein.fasta -org non-pl -format short -prefix prot1_short
+targetp-2.0/bin/targetp -fasta /home/erict/my_files_eric/Ct_nuevo/archivos_secuencias/protein.faa -org non-pl -format short -prefix prot1_short
