@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#SBATCH --job-name targetp                     # Name for your job
+#SBATCH --ntasks 1                             # Number of task
+#SBATCH --time=24:00:00                        # Total run time limit in HH:MM:SS
+#SBATCH --partition=medium                     # Partition to submit
+#SBATCH --error=targetp_%A_%a.err              # STDERR file
+#SBATCH --mail-type=end                        # Send email when job ends
+#SBATCH --mail-user=eric.torres@alumnos.upm.es # This is the email you wish to be notified at
+
+
+targetp-2.0/bin/targetp -fasta /home/erict/my_files_eric/Ct_nuevo/archivos_secuencias/ctprotein.fasta -org non-pl -format short -prefix prot1_short
