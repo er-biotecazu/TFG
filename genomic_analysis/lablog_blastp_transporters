@@ -10,8 +10,12 @@
 #SBATCH --mail-type=end
 #SBATCH --mail-user=eric.torres@alumnos.upm.es
 
-##### LOAD YOUR MODULE
+### DOWNLOAD PEPTIDASE UNITS AND CREATE BLAST DATABASE
+wget https://www.tcdb.org/public/tcdb
 
+makeblastdb -in tcdb -dbtype prot -out tcdb_database_files/tcdb
+
+### LOAD YOUR MODULE
 module use /beegfs/easybuild/CentOS/7.6.1810/Skylake/modules/all
 module use /beegfs/easybuild/common/modules/all
 
