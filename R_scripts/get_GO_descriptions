@@ -1,0 +1,35 @@
+#En este script, vamos a obtener las descripciones de los GO term que disponemos para Ct. Para ello, vamos a utilizar GO.db
+
+#BiocManager::install("GO.db")
+
+setwd("C:/Users/mts_3/OneDrive - Universidad Politécnica de Madrid/CBGP/PAES y TFG/Análisis/RNA-seq/GO_enrichment")
+library(GO.db)
+
+#Abrimos el archivo Ct_GOs.csv. Este contiene todos los GO terms que aparecen en Ct de acuerdo a las tres fuentes utilizadas para extraerlos: InterProScan, antiSMASH y TCDB. Nótese que no aparecen aquí los genes a los que aparece asociado cada término GO. 
+all_go<-read.csv("Ct_GOs.csv", header = FALSE)
+go_terms_vector <- all_go$V1
+
+#Con esta función, vamos a obtener las descripciones de cada término GO. Como se ha comprobado, aparecen algunos que están obsoletos y por tanto, no devuelve ninguna descripción. De ahí el último argumento. 
+go_info <- mget(go_terms_vector,GOTERM,ifnotfound=NA)
+
+#Generamos una lista vacía, que vamos a ir poblando en el bucle de a continuación para incluir la información de la descripción. 
+go_terms_list <- list()
+
+for (go in go_terms_vector) {
+  go_term_info <- go_info[[go]]
+  if (!is.na(go_term_info)) {
+    go_terms_list[[go]] <- Term(go_term_info)
+  } else {
+    go_terms_list[[go]] <- NA
+  }
+}
+
+#Creamos un data.frame con la información. La primera columna es el término GO y la segunda columna, la descripción. 
+go_data <- data.frame(GO_Term = names(go_terms_list),
+  Term = unlist(go_terms_list),
+  stringsAsFactors = FALSE
+)
+#View(go_Data)
+
+# Exportamos el data.frame a un archivo CSV. 
+write.csv(go_data, file = "go_terms_description.csv", row.names = FALSE)
