@@ -1,0 +1,55 @@
+#En primer lugar, abrimos el directorio con los archivos del recuento de lecturas en todas las condiciones experimentales. 
+directory <- "C:/Users/mts_3/OneDrive - Universidad Politécnica de Madrid/CBGP/PAES y TFG/Análisis/htseq_counts/all"
+
+#Seleccionamos los archivos e indicamos el nombre de las condiciones a utilizar.
+sampleFiles <- grep("C*.counts",list.files(directory),value=TRUE)
+sampleCondition <- sub("C_(.*)_[1-3]\\.counts", "\\1", sampleFiles)
+
+#Creamos un data.frame con el nombre de los archivos y de las condiciones.
+sampleTable <- data.frame(sampleName = sampleFiles,
+                          fileName = sampleFiles,
+                          condition = sampleCondition)
+
+#Creamos el objeto DESeqDataSet a partir de los datos de htseq-count.
+ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
+                                       directory = directory,
+                                       design= ~ condition)
+
+#Llevamos a cabo un pre-filtrado eliminando los genes con menos de 50 lecturas en todas las muestras.
+dds <- ddsHTSeq[rowSums(counts(ddsHTSeq)) > 50,]
+
+#Creamos el objeto DESeq
+dds <- DESeq(dds)
+
+#Calculamos la desviación absoluta de la mediana (MAD). Después, ordenamos las filas por orden decreciente de MAD. 
+normalised_counts <- counts(dds, normalized=TRUE)
+normalised_counts_mad <- apply(normalised_counts, 1, mad)
+normalised_counts <- normalised_counts[order(normalised_counts_mad, decreasing=T), ]
+
+#Para explorar la similitud de las muestras, vamoa a hacer un gráfico de PCA. Se trata de un método no supervisado de clustering que requiere de una normalización rlog (logaritmo regularizado) para mejorar la visualización. rlog permite, además, evitar los sesgos de los genes poco expresados. 
+
+rld <- rlog(dds, blind=FALSE)
+rlogMat <- assay(rld)
+rlogMat <- rlogMat[order(normalised_counts_mad, decreasing=T), ]
+
+
+#A continuación, dibujamos el plot PCA. 
+pcaData <- plotPCA(rld, intgroup="condition", returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+
+g <- ggplot(pcaData, aes(PC1, PC2))
+show(g)
+
+g <- g + geom_point(size=3, aes(color=condition)) +  
+  ggtitle("Gráfico PCA") +
+  theme(plot.title = element_text(hjust = 0.5)) + #ponemos nombre al gráfico y lo centramos
+  xlab(paste0("PC1: ", percentVar[1], "% varianza")) +
+  ylab(paste0("PC2: ", percentVar[2], "% varianza")) + #cambiamos el nombre de las leyendas para que esté en español.
+  labs(color = "Condición\nexperimental") +
+  theme(legend.position = "right",  #cambiamos el nombre y la posición del título de la leyenda
+        legend.title = element_text(size = 12, face = "bold"),  #cambiamos el tamaño y el estilo del título de la leyenda
+        legend.text = element_text(size = 10)) 
+show(g)
+
+#Guardamos el gráfico
+ggsave(paste( "PCA_todos_esp.tiff", sep=""), g, dpi=320, width=6.5, height=5)
