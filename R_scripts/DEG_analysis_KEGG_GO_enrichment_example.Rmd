@@ -1,0 +1,259 @@
+---
+title: "Análisis de expresión diferencial de genes de Ct0861 en interacción con maíz a 7dpi frente a 4dpi"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output:
+  html_document:
+    code_folding: hide
+    fig_caption: yes
+    number_sections: yes
+    theme: paper
+    toc: true
+    toc_float: yes
+  html_notebook:
+    code_folding: hide
+    fig_caption: yes
+    number_sections: yes
+    theme: paper
+    toc: true
+    toc_float: yes
+  pdf_document:
+    toc: yes
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+En primer lugar, cargamos los paquetes y librerías que se van a hacer uso 
+
+```{r Load Packages, include=FALSE, echo=FALSE}
+library("DEGreport")
+library("DESeq2")
+library("Glimma")
+library("apeglm")
+library("pheatmap")
+library("tidyverse")
+require("vidger")
+library("tidyverse")
+library("biomaRt")
+library("ggplot2")
+library("EnhancedVolcano")
+library("RColorBrewer")
+library("gplots")
+library("amap")
+library("ggplot2")
+library("BiocParallel")
+library("clusterProfiler")
+library("MASS") 
+library("reshape2") 
+library("reshape")
+require("DOSE")
+library("enrichplot")
+library("pathview")
+```
+
+Para visualizar el informe de MultiQC con el alineamiento de las lecturas al genoma de referencia de Ct0861 empleando el alineador STAR, por favor, clique en el siguiente enlace []
+
+El análisis está condicionado por el hecho de que el recuento de las lecturas se ha llevado a cabo con htseq-count del paquete de Python de HTSeq. Los siguientes pasos permiten crear el objeto DESeqDataSet: 
+
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+#En primer lugar, especificamos el directorio donde están almacenados los archivos con los recuentos creados con htseq-count.
+directory <- "C:/Users/mts_3/OneDrive - Universidad Politécnica de Madrid/CBGP/PAES y TFG/Análisis/htseq_counts/7_vs_4DPI"
+
+#Utilizando la función grep, listamos qué archivos del directorio especificado se deben tomar para el análisis en el que estamos interesados. 
+sampleFiles <- grep("C(4|7)R[1-3].counts",list.files(directory),value=TRUE)
+
+#La función sub el nombre de los archivos para quedarnos con las condiciones que se analizan. 
+sampleCondition <- sub("C(.*)R[1-3]\\.counts", "\\1dpi", sampleFiles)
+
+#Generamos un data frame con el nombre de los archivos y la condición a la que está asociado cada uno. 
+sampleTable <- data.frame(sampleName = sampleFiles,
+                          fileName = sampleFiles,
+                          condition = sampleCondition)
+
+sampleTable$condition <- factor(sampleTable$condition)
+
+#Con la siguiente función, generamos el DESeqDataSet
+ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
+                                       directory = directory,
+                                       design= ~ condition)
+```
+A continuación, se va a llevar a cabo un pre-filtrado de los datos para eliminar genes con bajo nivel de expresión, que se suponen que carecen de relevancia biológica. Además, permite incrementar la velocidad de los análisis al reducir el tamaño de ddsHTSeq. Vamos a eliminar los genes (filas) que tengan menos de 50 lecturas en todas las muestras. 
+
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+#Sumamos las lecturas en cada gen para todas las condiciones.
+sumcounts <- rowSums(counts(ddsHTSeq))
+
+#Tomamos el logaritmo de las sumas para facilitar la representación en un gráfico
+logsumcounts <- log(sumcounts,base=10)
+
+#Graficamos un histograma con el logaritmo de las sumas
+plot_without_filter <- hist(logsumcounts,breaks=100, main="Histograma antes del pre-filtrado")
+
+#Vamos a crear un vector lógico (keep) que comprueba si la suma de las lecturas en cada gen es mayor que el umbral, que definimos en un mínimo de 50. Es decir, aquellos genes que tengan menos de 50 lecturas en el conjunto de todas las muestras, serán eliminados. 
+keep <- rowSums(counts(ddsHTSeq)) >= 50
+table(keep)
+
+ddsHTSeq_filter <- ddsHTSeq[keep,]
+
+#Vamos a graficar nuevamente el mismo histograma con los logaritmos de las sumas de las lecturas de cada gen tras el proceso de pre-filtrado
+sumcounts <- rowSums(counts(ddsHTSeq_filter))
+logsumcounts <- log(sumcounts,base=10)
+plot_with_filter <- hist(logsumcounts,breaks=100,main="Histograma tras el pre-filtrado" )
+```
+
+Nótese que R toma el nivel de referencia (es decir, la condición *control*) por orden alfabético, y, en consecuencia, no hay que especificar en este caso el *factor level*, ya que por orden alfabético, la condición de referencia -que en este caso es 4dpi-, aparece antes que la otra condición, 7dpi. 
+
+A continuación, vamos a correr el análisis DESeq: 
+
+```{r message=FALSE, warning=FALSE}
+dds <- DESeq(ddsHTSeq_filter) # <- normalize and calculate dispersion
+resultsNames(dds)
+
+#Con la función results, vamos a obtener una tabla de resultados con el baseMean, log2FC, lfcSE, stat, valor p y valor p ajustado
+
+res <- results(dds)
+res
+
+#Filtramos aquellos genes con un valor p ajustado menor a 0.05
+summary(res, alpha=0.05)
+```
+Nótese que el test estadístico para calcular el valor p con la función DESeq es el test de Wald.
+
+# Visualización de datos
+
+Para la visualización de los datos, podemos crear *MA plots*. Los puntos que están coloreados en azul son los genes diferencialmente expresados significativos (con valores de p-adj < 0.05). Los triángulos indican genes con mayor logFC que los que aparecen en los ejes. 
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+plotMA(res)
+```
+
+Para la visualización de gráficos, como en este caso, es útil hacer *log fold change shrinkage*: 
+
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+resLFC <- lfcShrink(dds, coef="condition_7dpi_vs_4dpi", type="apeglm")
+resLFC
+
+plotMA(resLFC)
+```
+
+
+A continuación, vamos a graficar un histograma con la frecuencia de genes del análisis de DESeq en función de su valor p ajustado:
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+res_tbl <- as_tibble(res, rownames = "genes")
+res_tbl %>%
+  arrange(padj) %>%
+  head(5)
+
+res_tbl_filtered <- res_tbl %>% filter(padj <= 0.05 & abs(log2FoldChange) > 1 )
+res_tbl_filtered
+
+hist(res_tbl$padj, xlab="p ajustado", ylab="Frecuencia", main="Histograma con la frecuencia absoluta de\n genes de acuerdo a su valor de p-adj")
+```
+
+# Enriquecimiento KEGG
+
+En primer lugar, definimos las carpetas de entrada y salida
+```{r}
+in_path="C:/Users/mts_3/OneDrive - Universidad Politécnica de Madrid/CBGP/PAES y TFG/Análisis/RNA-seq/GO_enrichment/ClusterProfiler/KEGG_db/"
+
+out_path="C:/Users/mts_3/OneDrive - Universidad Politécnica de Madrid/CBGP/PAES y TFG/Análisis/RNA-seq/GO_enrichment/ClusterProfiler/KEGG_enrichment_results/"
+```
+
+A continuación, vamos a almacenar las anotaciones con los número K de KEGG: 
+
+```{r}
+BlastKOALA_kegg <- read.delim(paste0(in_path, 'user_ko_genes.txt'), header=FALSE, sep=";") %>% dplyr::select(V1, V2) %>% dplyr::rename(gene = V1, term = V2) %>% separate(gene, c("gene","kk"),sep ="-")  %>% dplyr::select(-kk) %>% distinct() %>%  drop_na() %>% relocate(term)
+
+BlastKOALA_kegg$term <- BlastKOALA_kegg$term %>% na_if("") 
+
+BlastKOALA_kegg <- BlastKOALA_kegg %>% distinct() %>%  drop_na() %>% relocate(term)
+```
+
+
+Definimos nuestro conjunto de genes de interés como aquellos que tengan un p ajustado < 0.05 y un log2FC >= 1 o <= -1: 
+
+```{r}
+interesting_set <- res_tbl %>% filter (abs(log2FoldChange) >= 1 & padj <= 0.05) %>% dplyr::select ("gene") %>% unlist() %>% as.vector()
+
+interesting_set_kegg <- BlastKOALA_kegg %>%
+  dplyr::filter(gene %in% interesting_set) %>%
+  unlist() %>%
+  as.vector()
+```
+
+Nuestro universo de genes van a ser todos los genes expresados 
+
+```{r}
+background_genes <- res_tbl %>% dplyr::select ("gene") %>% unlist() %>% as.vector() 
+background_kegg <- BlastKOALA_kegg %>%
+  dplyr::filter(gene %in% background_genes) %>%
+  unlist() %>%
+  as.vector()
+```
+
+Llevamos a cabo el enriquecimiento KEGG con la función enrichKEGG: 
+
+```{r}
+enrichment_kegg <- enrichKEGG(interesting_set_kegg,
+                              organism = "ko",
+                              keyType = "kegg",
+                              pvalueCutoff = 0.05,
+                              pAdjustMethod = "BH",
+                              universe = background_kegg,
+                              minGSSize = 10,
+                              maxGSSize = 500,
+                              qvalueCutoff = 0.05,
+                              use_internal_data = FALSE)
+```
+
+Por último, llevamos a cabo un dotplot: 
+
+```{r}
+if (any(enrichment_kegg@result$p.adjust <= 0.05)){
+  dotplot <- dotplot(enrichment_kegg,
+                     x= "geneRatio", 
+                     color="p.adjust",
+                     orderBy = "x", 
+                     showCategory=10,
+                     font.size=8) +
+    ggtitle("Análisis de enriquecimiento KEGG")
+  show(dotplot)
+}
+```
+
+#Enriquecimiento GO
+
+Los pasos seguidos en el enriquecimiento GO son muy parecidos a los del enriquecimiento KEGG: 
+```{r}
+in_path_GO="C:/Users/mts_3/OneDrive - Universidad Politécnica de Madrid/CBGP/PAES y TFG/Análisis/RNA-seq/GO_enrichment/ClusterProfiler/GO_db/"
+out_path_GO="C:/Users/mts_3/OneDrive - Universidad Politécnica de Madrid/CBGP/PAES y TFG/Análisis/RNA-seq/GO_enrichment/ClusterProfiler/GO_enrichment_results/"
+
+interesting_set <- res_tbl %>% filter (abs(log2FoldChange) >= 1 & padj <= 0.05) %>% dplyr::select ("gene") %>% unlist() %>% as.vector()
+
+background_genes <- res_tbl %>% dplyr::select ("gene") %>% unlist() %>% as.vector()
+```
+
+*term2gene* contiene los términos GO y los genes que está anotando. Por su parte, *term2name* contiene las equivalencias entre un término GO y su descripción.
+```{r}
+term2gene <- read.table(paste0(in_path_GO, 'GO_universe_cp.txt'), header = TRUE)
+term2name <- read_csv(paste0(in_path_GO, 'GO_terms_descriptions.csv'))
+```
+
+
+Llevamos a cabo el análisis de sobrerrepresentación (ORA) y hacemos un gráfico preliminar con los resultados: 
+
+```{r}
+enrichment_GO <- enricher(interesting_set_repressed,
+                          TERM2GENE = term2gene,
+                          TERM2NAME = term2name,
+                          pvalueCutoff = 0.05,
+                          universe = background_genes,
+                          pAdjustMethod = "BH",
+                          qvalueCutoff = 0.05)
+
+ora_analysis_bp_df <- enrichment_GO@result  %>% tibble::rownames_to_column("GO")
+```
+
