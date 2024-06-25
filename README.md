@@ -1,5 +1,5 @@
 # Repositorio TFG - Eric Torres
-Este repositorio recoge algunos de los *scripts* desarrollados por Eric Torres García para la realización de su Trabajo Fin de Grado (TFG) del grado de Biotecnología de la Universidad Politécnica de Madrd. 
+Este repositorio recoge algunos de los *scripts* desarrollados durante la realización de mi Trabajo Fin de Grado (TFG) para la obtención del título de Graduado en Biotecnología por la Universidad Politécnica de Madrid
 
 El TFG lleva por título «Análisis genómico y transcriptómico del hongo endófito *Colletotrichum tofieldiae* en interacción con *Zea mays* y *Arabidopsis thaliana*» y ha sido tutorizado por la Dra. Soledad Sacristán Benayas y la Dra. Sandra Díaz González. 
 
