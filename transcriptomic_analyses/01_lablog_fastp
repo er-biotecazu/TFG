@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#SBATCH --job-name pre-trimming                # Name for your job
+#SBATCH --ntasks 1                             # Number of task
+#SBATCH --time=02:00:00                        # Total run time limit in HH:MM:SS
+#SBATCH --partition=fast                       # Partition to submit
+#SBATCH --error=03-fastp_%A_%a.err             # STDERR file
+#SBATCH --mail-type=end                        # Send email when job ends
+#SBATCH --mail-user=eric.torres@alumnos.upm.es # This is the email you wish to be notified at
+#SBATCH --array=0-6                            # Array range and number of simultanous job
+
+## We define input and output paths 
+
+RUN_PATH_I=/home/erict/my_files_eric/Ct_nuevo/RNA-seq/Arabidopsis/axenic/X204SC23126116-Z01-F001/01.RawData/all_axenic_samples/merged_lanes
+RUN_PATH_O=/home/erict/my_files_eric/Ct_nuevo/RNA-seq/Arabidopsis/axenic/X204SC23126116-Z01-F001/01.RawData/all_axenic_samples/merged_lanes/01-fastp
+names=($(cat /home/erict/my_files_eric/Ct_nuevo/RNA-seq/Arabidopsis/axenic/X204SC23126116-Z01-F001/01.RawData/all_axenic_samples/merged_lanes/00-raw_reads/names_axenic_samples.txt))
+END_R1=1.fq.gz
+END_R2=2.fq.gz
+
+## We run the analysis
+# -l parameter refers to the minimum length of reads. If smaller, they will get removed. Default is 150 bp. As we're using 150 bp reads, I've considered to put 50 (the same criterium we used with Trimmomatic).
+
+fastp -i $RUN_PATH_I/${names[${SLURM_ARRAY_TASK_ID}]}_$END_R1 -I $RUN_PATH_I/${names[${SLURM_ARRAY_TASK_ID}]}_$END_R2 -o $RUN_PATH_O/${names[${SLURM_ARRAY_TASK_ID}]}_1.fastp -O $RUN_PATH_O/${names[${SLURM_ARRAY_TASK_ID}]}_2.fastp -l 50 -h ${names[${SLURM_ARRAY_TASK_ID}]}_report.html -j ${names[${SLURM_ARRAY_TASK_ID}]}_report.json
