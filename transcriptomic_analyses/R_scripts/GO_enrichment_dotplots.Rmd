@@ -1,0 +1,132 @@
+---
+title: "Script para la realización de dotplots con los resultados del análisis de enriquecimiento funcional en términos GO"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output:
+  html_document:
+    code_folding: hide
+    fig_caption: yes
+    number_sections: yes
+    theme: paper
+    toc: true
+    toc_float: yes
+  html_notebook:
+    code_folding: hide
+    fig_caption: yes
+    number_sections: yes
+    theme: paper
+    toc: true
+    toc_float: yes
+  pdf_document:
+    toc: yes
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+En primer lugar, cargamos los paquetes
+```{r Load Packages, include=FALSE, echo=FALSE}
+library(readxl)
+library(ggplot2)
+library(svglite)
+```
+
+
+Establecemos el directorio de donde se tomarán los archivos de Excel con los resultados del enriquecimiento funcional en términos GO procedentes de ClusterProfiler y REVIGO para la eliminación de redundancias. 
+Por simplicidad, solamente se cogen los términos de las ontologías BP ('biological process') y MF ('molecular function'):
+
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+setwd("C:/Users/mts_3/OneDrive - Universidad Politécnica de Madrid/CBGP/PAES y TFG/Análisis/RNA-seq/GO_enrichment/ClusterProfiler/GO_enrichment_results/Figures/Files for R figs")
+
+a <-read_excel("4dpi_reduced.xlsx")
+b <-read_excel("6dpi_reduced.xlsx")
+c <-read_excel("7dpi_reduced.xlsx")
+d <-read_excel("7dpi_vs_4dpi_reduced.xlsx")
+```
+
+## 4 dpi vs. axénico 
+La condición hace referencia a si se trata de GDE inducidos o reprimidos. 
+
+```{r warning = FALSE, message = FALSE, echo = TRUE}
+a_bp_mf <- ggplot(data = a, aes(x = Condition, y = Name,      
+                                  color = padj, size = FoldEnrichment)) +
+  geom_point() +
+  scale_color_gradient(low = "red", high = "blue") +
+  theme_bw() +
+  theme(axis.text.y = element_text(size = 12.5), axis.text.x = element_text(size = 11.5, face = "bold"), legend.position = "right") +
+  ylab("") +
+  xlab("") +
+  scale_y_discrete(position = "left") +
+  ggtitle("Enriquecimiento en términos GO\n(BP y MF)\n4 dpi vs. axénico") +
+  labs(color = "padj", size ="Fold\nenrichment")
+
+a_bp_mf + theme(plot.title = element_text(hjust = 0.5))
+a_bp_mf <- a_bp_mf + theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+## 6 dpi vs axénico ##
+```{r warning = FALSE, message = FALSE, echo = TRUE}
+b_bp_mf <- ggplot(data = b, aes(x = Condition, y = Name,
+                            color = padj, size = FoldEnrichment)) +
+  geom_point() +
+  scale_color_gradient(low = "red", high = "blue") +
+  theme_bw() +
+  theme(axis.text.y = element_text(size = 12.5),  axis.text.x = element_text(size = 11, face = "bold"), legend.position = "left") +
+  ylab("") +
+  xlab("") +
+  scale_y_discrete(position = "right") +
+  ggtitle("Enriquecimiento en términos GO\n(BP y MF)\n6 dpi vs. axénico")+
+  labs(color = "padj", size ="Fold\nenrichment")
+
+b_bp_mf + theme(plot.title = element_text(hjust = 0.5))
+b_bp_mf <- b_bp_mf + theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+## 7 dpi vs. axénico ##
+```{r warning = FALSE, message = FALSE, echo = TRUE}
+c_bp_mf <- ggplot(data = c, aes(x = Condition, y = Name,
+                            color = padj, size = FoldEnrichment)) +
+  geom_point() +
+  scale_color_gradient(low = "red", high = "blue") +
+  theme_minimal() +
+  theme_bw() +
+  theme(axis.text.y = element_text(size = 12.5), axis.text.x = element_text(size = 11, face = "bold"), legend.position = "left") +
+  ylab("") +
+  xlab("") +
+  scale_y_discrete(position = "right") +
+  ggtitle("Enriquecimiento en términos GO\n(BP y MF)\n7 dpi vs. axénico")+
+  labs(color = "padj", size ="Fold\nenrichment")
+
+c_bp_mf + theme(plot.title = element_text(hjust = 0.5))
+c_bp_mf <- c_bp_mf + theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+## 7 dpi vs. 4 dpi axénico ##
+```{r warning = FALSE, message = FALSE, echo = TRUE}
+d_bp_mf <- ggplot(data = d, aes(x = Condition, y = Name,
+                            color = padj, size = FoldEnrichment)) +
+  geom_point() +
+  scale_color_gradient(low = "red", high = "blue") +
+  theme_bw() +
+  theme(axis.text.y = element_text(size = 12.5), axis.text.x = element_text(size = 11, face = "bold")) +
+  ylab("") +
+  xlab("") +
+  scale_y_discrete(position = "left") +
+  ggtitle("Enriquecimiento en términos GO\n(BP y MF)\n7 dpi vs. 4 dpi") +
+  labs(color = "padj", size ="Fold\nenrichment")
+
+d_bp_mf + theme(plot.title = element_text(hjust = 0.5))
+d_bp_mf <- d_bp_mf + theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+```{r}
+ggsave(paste( "4dpi_reduced.pdf", sep=""), a_bp_mf, width=8, height=6)
+ggsave(paste( "6dpi_reduced.pdf", sep=""), b_bp_mf, width=12, height=7)
+ggsave(paste( "7dpi_reduced.pdf", sep=""), c_bp_mf, width=14, height=7)
+ggsave(paste( "7dpi_vs_reduced.pdf", sep=""), d_bp_mf, width=7.65, height=6)
+```
+
+
