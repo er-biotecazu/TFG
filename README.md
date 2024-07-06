@@ -13,7 +13,7 @@ Overall, this study demonstrates that the genome of *Ct*0861 encodes extensive r
 The comparative analyses of *Ct*0861 transcriptomes in both host plants and at different timepoints reveal distinct temporal dynamics and functions, suggesting divergent strategies for the colonisation and establishment of trophic interactions with different hosts. The results from the GO enrichment analysis also highlight the relevance of polysaccharides metabolism and transport in the interaction of *Ct*0861 with the different hosts and across various timepoints. The insights gained with this work pave the way to future research aimed at elucidating the molecular bases of endophytism.
 
 <p align="center">
-  <img width="600" height="450" src="https://github.com/er-biotecazu/TFG/assets/145058927/cdf3e735-cc07-4e85-b86a-1f2fced9b8d8">
+  <img width="500" height="290" src="https://github.com/er-biotecazu/TFG/assets/145058927/cf78138d-da9b-4e73-99c7-87640a7fcd2f">
 </p>
 
 ## Guía del repositorio 
