@@ -12,6 +12,10 @@ Overall, this study demonstrates that the genome of *Ct*0861 encodes extensive r
 
 The comparative analyses of *Ct*0861 transcriptomes in both host plants and at different timepoints reveal distinct temporal dynamics and functions, suggesting divergent strategies for the colonisation and establishment of trophic interactions with different hosts. The results from the GO enrichment analysis also highlight the relevance of polysaccharides metabolism and transport in the interaction of *Ct*0861 with the different hosts and across various timepoints. The insights gained with this work pave the way to future research aimed at elucidating the molecular bases of endophytism.
 
+<p align="center">
+  <img width="600" height="450" src="https://github.com/er-biotecazu/TFG/assets/145058927/cdf3e735-cc07-4e85-b86a-1f2fced9b8d8">
+</p>
+
 ## Guía del repositorio 
 Este repositorio se divide en dos carpetas principales, en función de la naturaleza de los análisis. Por una parte, los *scripts* utilizados para la caracterización genómica de *Ct*0861 ([genomic_analyses](https://github.com/er-biotecazu/TFG/tree/main/genomic_analyses)). Los programas incluidos en esta carpeta están destinados a obtener información a nivel funcional con el objetivo de anotar el genoma en distintas categorías de genes potencialmente involucradas en la interacción planta-hongo. 
 
